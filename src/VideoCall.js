@@ -12,7 +12,7 @@ const BACKEND_TOKEN_URL =
 
 const TEAMS_MEETING_LINK =
   process.env.REACT_APP_TEAMS_MEETING_LINK ||
-  "https://teams.microsoft.com/meet/47333454607072?p=2aPoDF3mOvmlgarZE9";
+  "https://teams.microsoft.com/meet/4470884700236?p=Y8W0rDN1XnfjP9JjnN";
 
 let callClient = null;
 let callAgent = null;
