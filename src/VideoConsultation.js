@@ -97,12 +97,37 @@ const styles = {
     letterSpacing: "0.08em"
   },
   title: {
+    flex: "1 1 auto",
+    minWidth: "260px",
     margin: 0,
     fontSize: "54px",
     lineHeight: 1,
     color: "#0f172a",
     letterSpacing: "-1.8px",
     fontWeight: 500
+  },
+  titleRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "18px",
+    flexWrap: "wrap"
+  },
+  dashboardLink: {
+    flex: "0 0 auto",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "38px",
+    padding: "9px 16px",
+    borderRadius: "14px",
+    background: "#DD8E75",
+    color: "#fff",
+    fontSize: "15px",
+    fontFamily: "inherit",
+    fontWeight: 500,
+    textDecoration: "none",
+    boxShadow: "0 8px 18px rgba(221, 142, 117, 0.22)"
   },
   subtitle: {
     marginTop: "14px",
@@ -760,6 +785,10 @@ export default function VideoConsultation({ roleConfig }) {
   const connectionStrengthText =
     connectionMetrics.score === null ? "Unavailable" : `${connectionMetrics.score}%`;
   const microphoneStrengthText = `${microphoneLevel}%`;
+  const currentPath =
+    typeof window === "undefined" ? "" : window.location.pathname.toLowerCase();
+  const isClinicianWaitingRoute =
+    currentPath.replace(/\/$/, "") === "/clinician";
 
   const getButtonStyle = (type, disabled = false) => {
     const base =
@@ -800,11 +829,19 @@ export default function VideoConsultation({ roleConfig }) {
               : config.meetingEyebrow}
           </div>
 
-          <h1 style={styles.title}>
-            {screen === "waiting"
-              ? config.waitingTitle
-              : config.meetingTitle}
-          </h1>
+          <div style={styles.titleRow}>
+            <h1 style={styles.title}>
+              {screen === "waiting"
+                ? config.waitingTitle
+                : config.meetingTitle}
+            </h1>
+
+            {screen === "waiting" && isClinicianWaitingRoute && config.dashboardPath ? (
+              <a href={config.dashboardPath} style={styles.dashboardLink}>
+                Dashboard
+              </a>
+            ) : null}
+          </div>
 
           <p style={styles.subtitle}>
             {screen === "waiting"
