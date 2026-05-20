@@ -61,10 +61,10 @@ function getStatusColor(callState) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background:
-      "radial-gradient(circle at top, #ffffff 0%, #f2f6ff 38%, #e9eef8 100%)",
+    background: "#EDE5DD",
     padding: "32px 20px",
-    fontFamily: '"Avenir Next", "Segoe UI", sans-serif'
+    fontFamily: '"Poppins", Arial, "Segoe UI", Roboto, sans-serif',
+    fontWeight: 500
   },
   shell: {
     width: "1440px",
@@ -88,7 +88,7 @@ const styles = {
     padding: "8px 14px",
     borderRadius: "999px",
     fontSize: "13px",
-    fontWeight: 700,
+    fontWeight: 500,
     color: "#114b8b",
     background: "#e8f1ff",
     border: "1px solid #d3e2ff",
@@ -97,11 +97,37 @@ const styles = {
     letterSpacing: "0.08em"
   },
   title: {
+    flex: "1 1 auto",
+    minWidth: "260px",
     margin: 0,
     fontSize: "54px",
     lineHeight: 1,
     color: "#0f172a",
-    letterSpacing: "-1.8px"
+    letterSpacing: "-1.8px",
+    fontWeight: 500
+  },
+  titleRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "18px",
+    flexWrap: "wrap"
+  },
+  dashboardLink: {
+    flex: "0 0 auto",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "38px",
+    padding: "9px 16px",
+    borderRadius: "14px",
+    background: "#DD8E75",
+    color: "#fff",
+    fontSize: "15px",
+    fontFamily: "inherit",
+    fontWeight: 500,
+    textDecoration: "none",
+    boxShadow: "0 8px 18px rgba(221, 142, 117, 0.22)"
   },
   subtitle: {
     marginTop: "14px",
@@ -127,7 +153,7 @@ const styles = {
     padding: "10px 16px",
     borderRadius: "999px",
     fontSize: "15px",
-    fontWeight: 700
+    fontWeight: 500
   },
   helperText: {
     margin: 0,
@@ -149,10 +175,10 @@ const styles = {
     alignItems: "start"
   },
   card: {
-    background: "#fff",
-    border: "1px solid #e8edf5",
+    background: "#F7EFE7",
+    border: "1px solid #E8C9BA",
     borderRadius: "26px",
-    boxShadow: "0 14px 38px rgba(15, 23, 42, 0.05)"
+    boxShadow: "0 14px 38px rgba(221, 142, 117, 0.12)"
   },
   sectionCard: {
     padding: "24px"
@@ -162,7 +188,8 @@ const styles = {
     marginBottom: "12px",
     fontSize: "26px",
     color: "#111827",
-    letterSpacing: "-0.4px"
+    letterSpacing: "-0.4px",
+    fontWeight: 500
   },
   bodyText: {
     margin: 0,
@@ -180,31 +207,34 @@ const styles = {
     padding: "14px 22px",
     borderRadius: "16px",
     border: "none",
-    background: "#1e63ff",
+    background: "#DD8E75",
     color: "#fff",
     fontSize: "16px",
-    fontWeight: 700,
+    fontFamily: "inherit",
+    fontWeight: 500,
     cursor: "pointer",
-    boxShadow: "0 10px 22px rgba(30, 99, 255, 0.22)"
+    boxShadow: "0 10px 22px rgba(221, 142, 117, 0.22)"
   },
   secondaryButton: {
     padding: "14px 22px",
     borderRadius: "16px",
     border: "1px solid #dbe1ea",
-    background: "#fff",
+    background: "#DD8E75",
     color: "#172033",
     fontSize: "16px",
-    fontWeight: 700,
+    fontFamily: "inherit",
+    fontWeight: 500,
     cursor: "pointer"
   },
   dangerButton: {
     padding: "14px 22px",
     borderRadius: "16px",
     border: "1px solid #ffd2d2",
-    background: "#fff5f5",
+    background: "#DD8E75",
     color: "#d92d20",
     fontSize: "16px",
-    fontWeight: 700,
+    fontFamily: "inherit",
+    fontWeight: 500,
     cursor: "pointer"
   },
   disabledButton: {
@@ -241,17 +271,46 @@ const styles = {
     gap: "10px",
     padding: "14px 16px",
     borderRadius: "16px",
-    background: "#f8fafc",
-    border: "1px solid #edf2f7"
+    background: "#F3D7C8",
+    border: "1px solid #E8B9A5"
   },
   statLabel: {
     fontSize: "15px",
-    fontWeight: 700,
+    fontWeight: 500,
     color: "#667085"
   },
   statValue: {
     fontSize: "16px",
-    fontWeight: 800,
+    fontWeight: 500,
+    color: "#111827"
+  },
+  metricGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "12px",
+    marginTop: "16px"
+  },
+  metricButton: {
+    width: "100%",
+    padding: "12px 14px",
+    borderRadius: "16px",
+    border: "1px solid #E8B9A5",
+    background: "#F3D7C8",
+    color: "#172033",
+    fontFamily: "inherit",
+    fontWeight: 500,
+    cursor: "default",
+    textAlign: "left"
+  },
+  metricLabel: {
+    display: "block",
+    fontSize: "13px",
+    color: "#667085"
+  },
+  metricValue: {
+    display: "block",
+    marginTop: "4px",
+    fontSize: "18px",
     color: "#111827"
   },
   remoteFrame: {
@@ -313,6 +372,54 @@ const styles = {
   }
 };
 
+function getConnectionMetrics() {
+  if (typeof navigator === "undefined") {
+    return {
+      score: null,
+      detail: "Unavailable"
+    };
+  }
+
+  if (!navigator.onLine) {
+    return {
+      score: 0,
+      detail: "Offline"
+    };
+  }
+
+  const connection =
+    navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+  if (!connection) {
+    return {
+      score: null,
+      detail: "Unavailable"
+    };
+  }
+
+  const downlink =
+    typeof connection.downlink === "number" ? connection.downlink : null;
+  const rtt = typeof connection.rtt === "number" ? connection.rtt : null;
+  const effectiveType = connection.effectiveType || "online";
+
+  const downlinkScore =
+    downlink === null ? 75 : Math.min(100, Math.round((downlink / 10) * 100));
+  const rttScore = rtt === null ? 75 : Math.max(0, 100 - Math.round(rtt / 4));
+  const score = Math.round((downlinkScore + rttScore) / 2);
+  const detail = [
+    downlink === null ? null : `${downlink} Mbps`,
+    rtt === null ? null : `${rtt} ms`,
+    effectiveType
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  return {
+    score,
+    detail
+  };
+}
+
 export default function VideoConsultation({ roleConfig }) {
   const config = useMemo(() => roleConfig, [roleConfig]);
 
@@ -324,9 +431,108 @@ export default function VideoConsultation({ roleConfig }) {
   const [loading, setLoading] = useState(false);
   const [isCameraEnabled, setIsCameraEnabled] = useState(true);
   const [shouldAutoJoin, setShouldAutoJoin] = useState(false);
+  const [connectionMetrics, setConnectionMetrics] = useState(
+    getConnectionMetrics
+  );
+  const [microphoneLevel, setMicrophoneLevel] = useState(0);
 
   const localVideoRef = useRef(null);
   const remoteVideosRef = useRef(null);
+
+  useEffect(() => {
+    const updateConnectionMetrics = () => {
+      setConnectionMetrics(getConnectionMetrics());
+    };
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+
+    updateConnectionMetrics();
+    window.addEventListener("online", updateConnectionMetrics);
+    window.addEventListener("offline", updateConnectionMetrics);
+    connection?.addEventListener?.("change", updateConnectionMetrics);
+
+    return () => {
+      window.removeEventListener("online", updateConnectionMetrics);
+      window.removeEventListener("offline", updateConnectionMetrics);
+      connection?.removeEventListener?.("change", updateConnectionMetrics);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMuted) {
+      setMicrophoneLevel(0);
+      return undefined;
+    }
+
+    let animationFrame = null;
+    let audioContext = null;
+    let mediaStream = null;
+    let cancelled = false;
+    let lastUpdate = 0;
+
+    async function measureMicrophoneLevel() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return;
+      }
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        if (cancelled) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContextClass();
+
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(mediaStream);
+        const data = new Uint8Array(analyser.fftSize);
+
+        analyser.fftSize = 2048;
+        source.connect(analyser);
+
+        const tick = (timestamp) => {
+          analyser.getByteTimeDomainData(data);
+
+          let sum = 0;
+          for (let index = 0; index < data.length; index += 1) {
+            const sample = (data[index] - 128) / 128;
+            sum += sample * sample;
+          }
+
+          if (timestamp - lastUpdate > 150) {
+            const rms = Math.sqrt(sum / data.length);
+            setMicrophoneLevel(Math.min(100, Math.round(rms * 260)));
+            lastUpdate = timestamp;
+          }
+
+          animationFrame = requestAnimationFrame(tick);
+        };
+
+        animationFrame = requestAnimationFrame(tick);
+      } catch (error) {
+        console.warn("Microphone strength unavailable:", error);
+        setMicrophoneLevel(0);
+      }
+    }
+
+    measureMicrophoneLevel();
+
+    return () => {
+      cancelled = true;
+
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+
+      mediaStream?.getTracks().forEach((track) => track.stop());
+      audioContext?.close?.();
+    };
+  }, [isMuted]);
 
   useEffect(() => {
     let cancelled = false;
@@ -576,6 +782,13 @@ export default function VideoConsultation({ roleConfig }) {
   };
 
   const statusStyle = getStatusColor(callState);
+  const connectionStrengthText =
+    connectionMetrics.score === null ? "Unavailable" : `${connectionMetrics.score}%`;
+  const microphoneStrengthText = `${microphoneLevel}%`;
+  const currentPath =
+    typeof window === "undefined" ? "" : window.location.pathname.toLowerCase();
+  const isClinicianWaitingRoute =
+    currentPath.replace(/\/$/, "") === "/clinician";
 
   const getButtonStyle = (type, disabled = false) => {
     const base =
@@ -588,6 +801,24 @@ export default function VideoConsultation({ roleConfig }) {
     return disabled ? { ...base, ...styles.disabledButton } : base;
   };
 
+  const renderStrengthMetrics = () => (
+    <div style={styles.metricGrid}>
+      <button type="button" style={styles.metricButton}>
+        <span style={styles.metricLabel}>Connection strength</span>
+        <span style={styles.metricValue}>{connectionStrengthText}</span>
+        <span style={styles.metricLabel}>{connectionMetrics.detail}</span>
+      </button>
+
+      <button type="button" style={styles.metricButton}>
+        <span style={styles.metricLabel}>Microphone strength</span>
+        <span style={styles.metricValue}>{microphoneStrengthText}</span>
+        <span style={styles.metricLabel}>
+          {isMuted ? "Muted" : "Live input"}
+        </span>
+      </button>
+    </div>
+  );
+
   return (
     <div style={styles.page}>
       <div style={styles.shell}>
@@ -598,11 +829,19 @@ export default function VideoConsultation({ roleConfig }) {
               : config.meetingEyebrow}
           </div>
 
-          <h1 style={styles.title}>
-            {screen === "waiting"
-              ? config.waitingTitle
-              : config.meetingTitle}
-          </h1>
+          <div style={styles.titleRow}>
+            <h1 style={styles.title}>
+              {screen === "waiting"
+                ? config.waitingTitle
+                : config.meetingTitle}
+            </h1>
+
+            {screen === "waiting" && isClinicianWaitingRoute && config.dashboardPath ? (
+              <a href={config.dashboardPath} style={styles.dashboardLink}>
+                Dashboard
+              </a>
+            ) : null}
+          </div>
 
           <p style={styles.subtitle}>
             {screen === "waiting"
@@ -676,6 +915,8 @@ export default function VideoConsultation({ roleConfig }) {
                     <span style={styles.statValue}>Visible after join</span>
                   </div>
                 </div>
+
+                {renderStrengthMetrics()}
 
                 <div style={styles.actionRow}>
                   <button
@@ -763,6 +1004,8 @@ export default function VideoConsultation({ roleConfig }) {
                     <span style={styles.statValue}>{remoteParticipantCount}</span>
                   </div>
                 </div>
+
+                {renderStrengthMetrics()}
 
                 <div style={styles.actionRow}>
                   <button

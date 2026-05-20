@@ -21,7 +21,8 @@ const clinicianConfig = {
   localTitle: "Your video",
   joinButton: "Join as Clinician",
   waitingRemoteText: "Waiting for patient",
-  notesEnabled: true
+  notesEnabled: true,
+  dashboardPath: "/clinician-dashboard"
 };
 
 export default function ClinicianPortal() {
