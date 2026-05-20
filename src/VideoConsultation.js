@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  isVideoStarted,
   joinCall,
   leaveCall,
   muteMyAudio,
+  refreshMyVideoPreview,
   startLocalPreview,
   startMyVideo,
   stopLocalPreview,
@@ -840,12 +840,18 @@ export default function VideoConsultation({ roleConfig }) {
     }
 
     try {
-      if (isVideoStarted()) {
-        setIsCameraEnabled(true);
-        return;
-      }
-
       await startMyVideo(localVideoRef.current);
+
+      window.setTimeout(() => {
+        const localVideoElement = localVideoRef.current;
+
+        if (localVideoElement) {
+          refreshMyVideoPreview(localVideoElement).catch((error) => {
+            console.warn("Could not refresh local video preview:", error);
+          });
+        }
+      }, 250);
+
       setIsCameraEnabled(true);
       setStatus("Camera turned on.");
     } catch (error) {

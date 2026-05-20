@@ -271,10 +271,14 @@ async function createLocalVideoStreamIfNeeded() {
   return localVideoStream;
 }
 
-async function renderLocalVideo(container) {
+async function renderLocalVideo(container, { forceNewRenderer = false } = {}) {
   if (!container) return;
 
   const stream = await createLocalVideoStreamIfNeeded();
+
+  if (forceNewRenderer) {
+    await disposeLocalPreview();
+  }
 
   if (!localVideoRenderer) {
     localVideoRenderer = new VideoStreamRenderer(stream);
@@ -669,27 +673,42 @@ export async function startMyVideo(localVideoContainer) {
   }
 
   if (isLocalVideoStarted) {
+    await renderLocalVideo(localVideoContainer, { forceNewRenderer: true });
     return;
   }
 
   const stream = await createLocalVideoStreamIfNeeded();
-  await renderLocalVideo(localVideoContainer);
   await activeCall.startVideo(stream);
   isLocalVideoStarted = true;
+  await renderLocalVideo(localVideoContainer, { forceNewRenderer: true });
 }
 
-export async function stopMyVideo() {
-  if (!activeCall || !localVideoStream || !isLocalVideoStarted) {
+export async function refreshMyVideoPreview(localVideoContainer) {
+  if (!localVideoContainer || !localVideoStream) {
     return;
   }
 
-  try {
-    await activeCall.stopVideo(localVideoStream);
-  } catch (error) {
-    console.warn("stopMyVideo failed:", error);
+  await renderLocalVideo(localVideoContainer, { forceNewRenderer: true });
+}
+
+export async function stopMyVideo() {
+  if (!activeCall) {
+    await disposeLocalPreview();
+    localVideoStream = null;
+    isLocalVideoStarted = false;
+    return;
+  }
+
+  if (localVideoStream && isLocalVideoStarted) {
+    try {
+      await activeCall.stopVideo(localVideoStream);
+    } catch (error) {
+      console.warn("stopMyVideo failed:", error);
+    }
   }
 
   await disposeLocalPreview();
+  localVideoStream = null;
   isLocalVideoStarted = false;
 }
 
