@@ -1,5 +1,6 @@
 import {
   CallClient,
+  Features,
   LocalVideoStream,
   VideoStreamRenderer
 } from "@azure/communication-calling";
@@ -25,9 +26,124 @@ let localVideoStream = null;
 let localVideoRenderer = null;
 let localVideoView = null;
 let isLocalVideoStarted = false;
+let activeRemoteVideoChangedCallback = null;
 
 const remoteStreamRenderers = new Map();
 const remoteParticipantListeners = new Map();
+let userFacingDiagnostics = null;
+let networkDiagnosticListener = null;
+
+function getQualityText(value) {
+  switch (value) {
+    case 1:
+      return "Good";
+    case 2:
+      return "Poor";
+    case 3:
+      return "Bad";
+    default:
+      return null;
+  }
+}
+
+function getNetworkQualityMetrics(diagnostics, changedDiagnostic = null) {
+  if (!diagnostics?.network) {
+    return null;
+  }
+
+  const latest = diagnostics.network.getLatest();
+  const diagnosticName = changedDiagnostic?.diagnostic;
+  const diagnosticValue = changedDiagnostic?.value;
+
+  if (latest.noNetwork?.value === true) {
+    return {
+      value: "Bad",
+      detail: "ACS reports no network",
+      source: "ACS call diagnostics"
+    };
+  }
+
+  if (diagnosticName === "noNetwork" && diagnosticValue === true) {
+    return {
+      value: "Bad",
+      detail: "ACS reports no network",
+      source: "ACS call diagnostics"
+    };
+  }
+
+  if (latest.networkRelaysNotReachable?.value === true) {
+    return {
+      value: "Bad",
+      detail: "ACS relays not reachable",
+      source: "ACS call diagnostics"
+    };
+  }
+
+  if (
+    diagnosticName === "networkRelaysNotReachable" &&
+    diagnosticValue === true
+  ) {
+    return {
+      value: "Bad",
+      detail: "ACS relays not reachable",
+      source: "ACS call diagnostics"
+    };
+  }
+
+  const qualityValues = [
+    latest.networkSendQuality?.value,
+    latest.networkReceiveQuality?.value,
+    latest.networkReconnect?.value
+  ].filter((value) => typeof value === "number");
+
+  if (qualityValues.length === 0) {
+    if (typeof diagnosticValue === "number") {
+      return {
+        value: getQualityText(diagnosticValue) || "Checking",
+        detail: diagnosticName || "ACS call diagnostic updated",
+        source: "ACS call diagnostics"
+      };
+    }
+
+    return null;
+  }
+
+  const worstQuality = Math.max(...qualityValues);
+  const value = getQualityText(worstQuality) || "Checking";
+  const detailParts = [
+    latest.networkSendQuality
+      ? `send ${getQualityText(latest.networkSendQuality.value)}`
+      : null,
+    latest.networkReceiveQuality
+      ? `receive ${getQualityText(latest.networkReceiveQuality.value)}`
+      : null,
+    latest.networkReconnect
+      ? `reconnect ${getQualityText(latest.networkReconnect.value)}`
+      : null
+  ].filter(Boolean);
+
+  return {
+    value,
+    detail: detailParts.join(" | "),
+    source: "ACS call diagnostics"
+  };
+}
+
+function cleanupDiagnostics() {
+  if (userFacingDiagnostics && networkDiagnosticListener) {
+    try {
+      userFacingDiagnostics.network.off(
+        "diagnosticChanged",
+        networkDiagnosticListener
+      );
+    } catch (error) {
+      console.warn("Failed removing network diagnostics listener:", error);
+    }
+  }
+
+  userFacingDiagnostics = null;
+  networkDiagnosticListener = null;
+}
 
 function validateMeetingLink(link) {
   if (!link || typeof link !== "string") {
@@ -207,7 +323,11 @@ export async function stopLocalPreview() {
   await disposeLocalPreview();
 }
 
-async function renderRemoteVideoStream(remoteVideoStream, remoteVideosContainer) {
+async function renderRemoteVideoStream(
+  remoteVideoStream,
+  remoteVideosContainer,
+  onRemoteVideoChanged
+) {
   if (!remoteVideosContainer) return;
 
   const streamKey = remoteVideoStream.id ?? `${Date.now()}-${Math.random()}`;
@@ -247,9 +367,13 @@ async function renderRemoteVideoStream(remoteVideoStream, remoteVideosContainer)
     view,
     wrapper
   });
+
+  if (typeof onRemoteVideoChanged === "function") {
+    onRemoteVideoChanged(true);
+  }
 }
 
-function disposeRemoteVideoStream(remoteVideoStream) {
+function disposeRemoteVideoStream(remoteVideoStream, onRemoteVideoChanged) {
   const streamKey = remoteVideoStream.id;
 
   if (!remoteStreamRenderers.has(streamKey)) {
@@ -277,9 +401,13 @@ function disposeRemoteVideoStream(remoteVideoStream) {
   }
 
   remoteStreamRenderers.delete(streamKey);
+
+  if (typeof onRemoteVideoChanged === "function") {
+    onRemoteVideoChanged(remoteStreamRenderers.size > 0);
+  }
 }
 
-function clearAllRemoteVideos() {
+function clearAllRemoteVideos(onRemoteVideoChanged) {
   for (const [, entry] of remoteStreamRenderers) {
     try {
       entry.view?.dispose();
@@ -295,15 +423,27 @@ function clearAllRemoteVideos() {
   }
 
   remoteStreamRenderers.clear();
+
+  if (typeof onRemoteVideoChanged === "function") {
+    onRemoteVideoChanged(false);
+  }
 }
 
-async function handleRemoteVideoStream(remoteVideoStream, remoteVideosContainer) {
+async function handleRemoteVideoStream(
+  remoteVideoStream,
+  remoteVideosContainer,
+  onRemoteVideoChanged
+) {
   const tryRender = async () => {
     try {
       if (remoteVideoStream.isAvailable) {
-        await renderRemoteVideoStream(remoteVideoStream, remoteVideosContainer);
+        await renderRemoteVideoStream(
+          remoteVideoStream,
+          remoteVideosContainer,
+          onRemoteVideoChanged
+        );
       } else {
-        disposeRemoteVideoStream(remoteVideoStream);
+        disposeRemoteVideoStream(remoteVideoStream, onRemoteVideoChanged);
       }
     } catch (error) {
       console.error("Remote video render failed:", error);
@@ -317,7 +457,11 @@ async function handleRemoteVideoStream(remoteVideoStream, remoteVideosContainer)
   }
 }
 
-async function subscribeToParticipant(participant, remoteVideosContainer) {
+async function subscribeToParticipant(
+  participant,
+  remoteVideosContainer,
+  onRemoteVideoChanged
+) {
   console.log("Participant connected:", participant);
   console.log("participant.isMuted:", participant.isMuted);
   console.log("participant.state:", participant.state);
@@ -333,11 +477,15 @@ async function subscribeToParticipant(participant, remoteVideosContainer) {
 
   const onVideoStreamsUpdated = (e) => {
     e.added.forEach(async (stream) => {
-      await handleRemoteVideoStream(stream, remoteVideosContainer);
+      await handleRemoteVideoStream(
+        stream,
+        remoteVideosContainer,
+        onRemoteVideoChanged
+      );
     });
 
     e.removed.forEach((stream) => {
-      disposeRemoteVideoStream(stream);
+      disposeRemoteVideoStream(stream, onRemoteVideoChanged);
     });
   };
 
@@ -359,7 +507,11 @@ async function subscribeToParticipant(participant, remoteVideosContainer) {
   });
 
   participant.videoStreams.forEach(async (stream) => {
-    await handleRemoteVideoStream(stream, remoteVideosContainer);
+    await handleRemoteVideoStream(
+      stream,
+      remoteVideosContainer,
+      onRemoteVideoChanged
+    );
   });
 }
 
@@ -389,6 +541,8 @@ export async function joinCall({
   onStateChanged,
   onMutedChanged,
   onParticipantsChanged,
+  onCallQualityChanged,
+  onRemoteVideoChanged,
   startWithVideo = true
 } = {}) {
   validateMeetingLink(TEAMS_MEETING_LINK);
@@ -409,6 +563,29 @@ export async function joinCall({
   );
 
   activeCall = joinedCall;
+  activeRemoteVideoChangedCallback = onRemoteVideoChanged;
+
+  cleanupDiagnostics();
+
+    try {
+      userFacingDiagnostics = joinedCall.feature(Features.UserFacingDiagnostics);
+    const emitCallQuality = (changedDiagnostic = null) => {
+      if (typeof onCallQualityChanged === "function") {
+        onCallQualityChanged(
+          getNetworkQualityMetrics(userFacingDiagnostics, changedDiagnostic)
+        );
+      }
+    };
+
+    networkDiagnosticListener = emitCallQuality;
+    userFacingDiagnostics.network.on(
+      "diagnosticChanged",
+      networkDiagnosticListener
+    );
+    emitCallQuality();
+  } catch (error) {
+    console.warn("ACS call diagnostics unavailable:", error);
+  }
 
   joinedCall.on("stateChanged", async () => {
     console.log("Call state:", joinedCall.state);
@@ -447,7 +624,11 @@ export async function joinCall({
     console.log("Remote participants updated:", e);
 
     e.added.forEach(async (participant) => {
-      await subscribeToParticipant(participant, remoteVideosContainer);
+      await subscribeToParticipant(
+        participant,
+        remoteVideosContainer,
+        onRemoteVideoChanged
+      );
     });
 
     e.removed.forEach((participant) => {
@@ -460,7 +641,11 @@ export async function joinCall({
   });
 
   joinedCall.remoteParticipants.forEach(async (participant) => {
-    await subscribeToParticipant(participant, remoteVideosContainer);
+    await subscribeToParticipant(
+      participant,
+      remoteVideosContainer,
+      onRemoteVideoChanged
+    );
   });
 
   if (typeof onStateChanged === "function") {
@@ -555,6 +740,8 @@ export async function leaveCall() {
       console.warn("hangUp failed:", error);
     }
   } finally {
+    cleanupDiagnostics();
+
     try {
       await disposeLocalPreview();
     } catch (error) {
@@ -562,7 +749,7 @@ export async function leaveCall() {
     }
 
     try {
-      clearAllRemoteVideos();
+      clearAllRemoteVideos(activeRemoteVideoChangedCallback);
     } catch (error) {
       console.warn("clearAllRemoteVideos failed:", error);
     }
@@ -577,5 +764,6 @@ export async function leaveCall() {
     localVideoRenderer = null;
     localVideoView = null;
     isLocalVideoStarted = false;
+    activeRemoteVideoChangedCallback = null;
   }
 }
