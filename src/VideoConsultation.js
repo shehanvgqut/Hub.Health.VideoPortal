@@ -81,6 +81,9 @@ const styles = {
     background: "linear-gradient(135deg, #fffdf9 0%, #eef5ff 100%)",
     borderBottom: "1px solid #edf1f7"
   },
+  meetingHero: {
+    padding: "22px 40px 18px 40px"
+  },
   eyebrow: {
     display: "inline-flex",
     alignItems: "center",
@@ -105,6 +108,10 @@ const styles = {
     color: "#0f172a",
     letterSpacing: "-1.8px",
     fontWeight: 500
+  },
+  meetingTitle: {
+    fontSize: "42px",
+    lineHeight: 1.05
   },
   titleRow: {
     display: "flex",
@@ -137,8 +144,17 @@ const styles = {
     color: "#526075",
     maxWidth: "800px"
   },
+  meetingSubtitle: {
+    marginTop: "10px",
+    fontSize: "16px",
+    lineHeight: 1.45,
+    maxWidth: "720px"
+  },
   topBar: {
     padding: "22px 40px 0 40px"
+  },
+  meetingTopBar: {
+    padding: "14px 40px 0 40px"
   },
   statusWrap: {
     display: "flex",
@@ -169,9 +185,9 @@ const styles = {
   },
   meetingGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 340px",
-    gap: "24px",
-    padding: "24px 40px 40px 40px",
+    gridTemplateColumns: "minmax(0, 1fr) 330px",
+    gap: "20px",
+    padding: "18px 40px 32px 40px",
     alignItems: "start"
   },
   card: {
@@ -261,41 +277,42 @@ const styles = {
   },
   statList: {
     display: "grid",
-    gap: "14px",
-    marginTop: "22px"
+    gap: "8px",
+    marginTop: "14px"
   },
   statRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     gap: "10px",
-    padding: "14px 16px",
-    borderRadius: "16px",
-    background: "#F3D7C8",
-    border: "1px solid #E8B9A5"
+    padding: "9px 12px",
+    borderRadius: "12px",
+    background: "#fff8f3",
+    border: "1px solid #efd1c3"
   },
   statLabel: {
-    fontSize: "15px",
+    fontSize: "13px",
     fontWeight: 500,
     color: "#667085"
   },
   statValue: {
-    fontSize: "16px",
+    fontSize: "14px",
     fontWeight: 500,
     color: "#111827"
   },
   metricGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: "12px",
-    marginTop: "16px"
+    gap: "10px",
+    marginTop: "12px"
   },
   metricButton: {
     width: "100%",
-    padding: "12px 14px",
-    borderRadius: "16px",
-    border: "1px solid #E8B9A5",
-    background: "#F3D7C8",
+    minHeight: "84px",
+    padding: "11px 12px",
+    borderRadius: "12px",
+    border: "1px solid #efd1c3",
+    background: "#fff8f3",
     color: "#172033",
     fontFamily: "inherit",
     fontWeight: 500,
@@ -304,17 +321,18 @@ const styles = {
   },
   metricLabel: {
     display: "block",
-    fontSize: "13px",
+    fontSize: "12px",
     color: "#667085"
   },
   metricValue: {
     display: "block",
-    marginTop: "4px",
-    fontSize: "18px",
+    marginTop: "6px",
+    fontSize: "20px",
+    lineHeight: 1,
     color: "#111827"
   },
   remoteFrame: {
-    minHeight: "640px",
+    minHeight: "min(58vh, 560px)",
     borderRadius: "28px",
     background: "linear-gradient(180deg, #0c111b 0%, #111827 100%)",
     overflow: "hidden",
@@ -322,11 +340,12 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    position: "relative"
+    position: "relative",
+    flexDirection: "column"
   },
   remoteVideosHost: {
     width: "100%",
-    minHeight: "640px",
+    minHeight: "min(58vh, 560px)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -338,11 +357,17 @@ const styles = {
     textAlign: "center",
     maxWidth: "420px",
     lineHeight: 1.6,
-    padding: "20px"
+    padding: "20px",
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto"
   },
   localTile: {
     width: "100%",
-    minHeight: "240px",
+    minHeight: "170px",
     background: "linear-gradient(180deg, #10131a 0%, #05070b 100%)",
     borderRadius: "22px",
     overflow: "hidden",
@@ -354,10 +379,41 @@ const styles = {
   },
   meetingSidebar: {
     display: "grid",
-    gap: "20px"
+    gap: "14px",
+    position: "sticky",
+    top: "14px"
   },
   controlsCard: {
-    padding: "24px"
+    padding: "20px",
+    borderRadius: "22px"
+  },
+  controlsTitle: {
+    marginTop: 0,
+    marginBottom: "14px",
+    fontSize: "24px",
+    lineHeight: 1.15,
+    color: "#0f172a",
+    fontWeight: 500
+  },
+  controlsActionRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "10px",
+    marginTop: "16px"
+  },
+  controlsButton: {
+    minHeight: "48px",
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: "12px",
+    fontSize: "14px"
+  },
+  controlsDangerButton: {
+    gridColumn: "1 / -1",
+    background: "#d92d20",
+    color: "#fff",
+    border: "1px solid #d92d20",
+    boxShadow: "0 10px 22px rgba(217, 45, 32, 0.18)"
   },
   notesArea: {
     width: "100%",
@@ -375,14 +431,14 @@ const styles = {
 function getConnectionMetrics() {
   if (typeof navigator === "undefined") {
     return {
-      score: null,
-      detail: "Unavailable"
+      value: "Unavailable",
+      detail: "Browser network estimate unavailable"
     };
   }
 
   if (!navigator.onLine) {
     return {
-      score: 0,
+      value: "Offline",
       detail: "Offline"
     };
   }
@@ -392,8 +448,8 @@ function getConnectionMetrics() {
 
   if (!connection) {
     return {
-      score: null,
-      detail: "Unavailable"
+      value: "Unavailable",
+      detail: "Browser network estimate unavailable"
     };
   }
 
@@ -415,7 +471,7 @@ function getConnectionMetrics() {
     .join(" | ");
 
   return {
-    score,
+    value: `${score}% estimate`,
     detail
   };
 }
@@ -428,13 +484,16 @@ export default function VideoConsultation({ roleConfig }) {
   const [callState, setCallState] = useState("None");
   const [isMuted, setIsMuted] = useState(false);
   const [remoteParticipantCount, setRemoteParticipantCount] = useState(0);
+  const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isCameraEnabled, setIsCameraEnabled] = useState(true);
   const [shouldAutoJoin, setShouldAutoJoin] = useState(false);
   const [connectionMetrics, setConnectionMetrics] = useState(
     getConnectionMetrics
   );
+  const [callQualityMetrics, setCallQualityMetrics] = useState(null);
   const [microphoneLevel, setMicrophoneLevel] = useState(0);
+  const [microphoneStatus, setMicrophoneStatus] = useState("Live input");
 
   const localVideoRef = useRef(null);
   const remoteVideosRef = useRef(null);
@@ -463,6 +522,7 @@ export default function VideoConsultation({ roleConfig }) {
   useEffect(() => {
     if (isMuted) {
       setMicrophoneLevel(0);
+      setMicrophoneStatus("Muted");
       return undefined;
     }
 
@@ -474,11 +534,14 @@ export default function VideoConsultation({ roleConfig }) {
 
     async function measureMicrophoneLevel() {
       if (!navigator.mediaDevices?.getUserMedia) {
+        setMicrophoneLevel(0);
+        setMicrophoneStatus("Unavailable");
         return;
       }
 
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setMicrophoneStatus("Live input");
 
         if (cancelled) {
           mediaStream.getTracks().forEach((track) => track.stop());
@@ -517,6 +580,7 @@ export default function VideoConsultation({ roleConfig }) {
       } catch (error) {
         console.warn("Microphone strength unavailable:", error);
         setMicrophoneLevel(0);
+        setMicrophoneStatus("Unavailable");
       }
     }
 
@@ -574,6 +638,29 @@ export default function VideoConsultation({ roleConfig }) {
   }, [isCameraEnabled, screen, config.displayName]);
 
   useEffect(() => {
+    if (screen !== "meeting" || !remoteVideosRef.current) {
+      setHasRemoteVideo(false);
+      return undefined;
+    }
+
+    const remoteVideosElement = remoteVideosRef.current;
+    const syncRemoteVideoState = () => {
+      setHasRemoteVideo(remoteVideosElement.childElementCount > 0);
+    };
+
+    syncRemoteVideoState();
+
+    const observer = new MutationObserver(syncRemoteVideoState);
+    observer.observe(remoteVideosElement, {
+      childList: true
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [screen]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function connectToMeeting() {
@@ -605,6 +692,8 @@ export default function VideoConsultation({ roleConfig }) {
 
             if (newState === "Disconnected") {
               setRemoteParticipantCount(0);
+              setHasRemoteVideo(false);
+              setCallQualityMetrics(null);
               setScreen("waiting");
             }
           },
@@ -616,6 +705,16 @@ export default function VideoConsultation({ roleConfig }) {
           onParticipantsChanged: (participants) => {
             if (!cancelled) {
               setRemoteParticipantCount(participants?.length || 0);
+            }
+          },
+          onCallQualityChanged: (metrics) => {
+            if (!cancelled) {
+              setCallQualityMetrics(metrics);
+            }
+          },
+          onRemoteVideoChanged: (remoteVideoAvailable) => {
+            if (!cancelled) {
+              setHasRemoteVideo(Boolean(remoteVideoAvailable));
             }
           }
         });
@@ -669,6 +768,8 @@ export default function VideoConsultation({ roleConfig }) {
       setCallState("Disconnected");
       setStatus("Call ended.");
       setRemoteParticipantCount(0);
+      setHasRemoteVideo(false);
+      setCallQualityMetrics(null);
       setScreen("waiting");
 
       if (remoteVideosRef.current) {
@@ -782,8 +883,8 @@ export default function VideoConsultation({ roleConfig }) {
   };
 
   const statusStyle = getStatusColor(callState);
-  const connectionStrengthText =
-    connectionMetrics.score === null ? "Unavailable" : `${connectionMetrics.score}%`;
+  const displayedConnectionMetrics = callQualityMetrics || connectionMetrics;
+  const connectionStrengthText = displayedConnectionMetrics.value;
   const microphoneStrengthText = `${microphoneLevel}%`;
   const currentPath =
     typeof window === "undefined" ? "" : window.location.pathname.toLowerCase();
@@ -801,20 +902,26 @@ export default function VideoConsultation({ roleConfig }) {
     return disabled ? { ...base, ...styles.disabledButton } : base;
   };
 
+  const getControlsButtonStyle = (type, disabled = false) => ({
+    ...getButtonStyle(type, disabled),
+    ...styles.controlsButton,
+    ...(type === "danger" ? styles.controlsDangerButton : {})
+  });
+
   const renderStrengthMetrics = () => (
     <div style={styles.metricGrid}>
       <button type="button" style={styles.metricButton}>
-        <span style={styles.metricLabel}>Connection strength</span>
+        <span style={styles.metricLabel}>
+          {callQualityMetrics ? "Call connection quality" : "Connection estimate"}
+        </span>
         <span style={styles.metricValue}>{connectionStrengthText}</span>
-        <span style={styles.metricLabel}>{connectionMetrics.detail}</span>
+        <span style={styles.metricLabel}>{displayedConnectionMetrics.detail}</span>
       </button>
 
       <button type="button" style={styles.metricButton}>
-        <span style={styles.metricLabel}>Microphone strength</span>
+        <span style={styles.metricLabel}>Microphone input level</span>
         <span style={styles.metricValue}>{microphoneStrengthText}</span>
-        <span style={styles.metricLabel}>
-          {isMuted ? "Muted" : "Live input"}
-        </span>
+        <span style={styles.metricLabel}>{microphoneStatus}</span>
       </button>
     </div>
   );
@@ -822,7 +929,12 @@ export default function VideoConsultation({ roleConfig }) {
   return (
     <div style={styles.page}>
       <div style={styles.shell}>
-        <div style={styles.hero}>
+        <div
+          style={{
+            ...styles.hero,
+            ...(screen === "meeting" ? styles.meetingHero : {})
+          }}
+        >
           <div style={styles.eyebrow}>
             {screen === "waiting"
               ? config.waitingEyebrow
@@ -830,7 +942,12 @@ export default function VideoConsultation({ roleConfig }) {
           </div>
 
           <div style={styles.titleRow}>
-            <h1 style={styles.title}>
+            <h1
+              style={{
+                ...styles.title,
+                ...(screen === "meeting" ? styles.meetingTitle : {})
+              }}
+            >
               {screen === "waiting"
                 ? config.waitingTitle
                 : config.meetingTitle}
@@ -843,14 +960,24 @@ export default function VideoConsultation({ roleConfig }) {
             ) : null}
           </div>
 
-          <p style={styles.subtitle}>
+          <p
+            style={{
+              ...styles.subtitle,
+              ...(screen === "meeting" ? styles.meetingSubtitle : {})
+            }}
+          >
             {screen === "waiting"
               ? config.waitingSubtitle
               : config.meetingSubtitle}
           </p>
         </div>
 
-        <div style={styles.topBar}>
+        <div
+          style={{
+            ...styles.topBar,
+            ...(screen === "meeting" ? styles.meetingTopBar : {})
+          }}
+        >
           <div style={styles.statusWrap}>
             <div style={{ ...styles.statusPill, ...statusStyle }}>{status}</div>
 
@@ -954,7 +1081,7 @@ export default function VideoConsultation({ roleConfig }) {
               <div style={{ ...styles.remoteFrame, marginTop: "20px" }}>
                 <div ref={remoteVideosRef} style={styles.remoteVideosHost} />
 
-                {remoteParticipantCount === 0 && (
+                {!hasRemoteVideo && (
                   <div style={styles.emptyState}>
                     No remote participant video yet. Once the other person joins
                     with their camera on, the video will appear here.
@@ -965,14 +1092,7 @@ export default function VideoConsultation({ roleConfig }) {
 
             <div style={styles.meetingSidebar}>
               <div style={{ ...styles.card, ...styles.controlsCard }}>
-                <h3 style={styles.sectionTitle}>{config.localTitle}</h3>
-                <div ref={localVideoRef} style={styles.localTile}>
-                  {!isCameraEnabled ? "Your camera is off" : null}
-                </div>
-              </div>
-
-              <div style={{ ...styles.card, ...styles.controlsCard }}>
-                <h3 style={styles.sectionTitle}>Meeting controls</h3>
+                <h3 style={styles.controlsTitle}>Meeting controls</h3>
 
                 <div style={styles.statList}>
                   <div style={styles.statRow}>
@@ -1007,11 +1127,14 @@ export default function VideoConsultation({ roleConfig }) {
 
                 {renderStrengthMetrics()}
 
-                <div style={styles.actionRow}>
+                <div style={styles.controlsActionRow}>
                   <button
                     onClick={handleMuteAudio}
                     disabled={!isConnected || isMuted}
-                    style={getButtonStyle("secondary", !isConnected || isMuted)}
+                    style={getControlsButtonStyle(
+                      "secondary",
+                      !isConnected || isMuted
+                    )}
                   >
                     Mute Mic
                   </button>
@@ -1019,7 +1142,10 @@ export default function VideoConsultation({ roleConfig }) {
                   <button
                     onClick={handleUnmuteAudio}
                     disabled={!isConnected || !isMuted}
-                    style={getButtonStyle("secondary", !isConnected || !isMuted)}
+                    style={getControlsButtonStyle(
+                      "secondary",
+                      !isConnected || !isMuted
+                    )}
                   >
                     Unmute Mic
                   </button>
@@ -1027,7 +1153,7 @@ export default function VideoConsultation({ roleConfig }) {
                   <button
                     onClick={handleUnblockVideo}
                     disabled={!isConnected || isCameraEnabled}
-                    style={getButtonStyle(
+                    style={getControlsButtonStyle(
                       "secondary",
                       !isConnected || isCameraEnabled
                     )}
@@ -1038,7 +1164,7 @@ export default function VideoConsultation({ roleConfig }) {
                   <button
                     onClick={handleBlockVideo}
                     disabled={!isConnected || !isCameraEnabled}
-                    style={getButtonStyle(
+                    style={getControlsButtonStyle(
                       "secondary",
                       !isConnected || !isCameraEnabled
                     )}
@@ -1049,10 +1175,17 @@ export default function VideoConsultation({ roleConfig }) {
                   <button
                     onClick={handleLeave}
                     disabled={loading || !isConnected}
-                    style={getButtonStyle("danger", loading || !isConnected)}
+                    style={getControlsButtonStyle("danger", loading || !isConnected)}
                   >
                     Leave Meeting
                   </button>
+                </div>
+              </div>
+
+              <div style={{ ...styles.card, ...styles.controlsCard }}>
+                <h3 style={styles.sectionTitle}>{config.localTitle}</h3>
+                <div ref={localVideoRef} style={styles.localTile}>
+                  {!isCameraEnabled ? "Your camera is off" : null}
                 </div>
               </div>
 
